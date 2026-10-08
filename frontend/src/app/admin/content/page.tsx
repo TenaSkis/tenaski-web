@@ -10,6 +10,7 @@ import IntroContentForm from './IntroContentForm'
 import AcabadosContentForm from './AcabadosContentForm'
 import AcabadosPremiumContentForm from './AcabadosPremiumContentForm'
 import SectionGroup from './Sectiongroup'
+import ScrollToTop from '@/components/ui/ScrollToTop'
 
 export default async function ContentPage() {
   const supabase = await createClient()
@@ -198,6 +199,7 @@ export default async function ContentPage() {
     heroBlocks?.find((block) => block.seccion === seccion) ?? null
 
   return (
+    <>
     <div className="space-y-12">
       {/* HEADER */}
       <div>
@@ -387,5 +389,8 @@ export default async function ContentPage() {
         />
       </SectionGroup>
     </div>
+
+    <ScrollToTop />
+    </>
   )
 }

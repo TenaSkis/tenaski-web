@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { safe } from '@/lib/supabase/safe'
 import Hero from '@/components/home/Hero'
 import Intro from '@/components/catalog/Intro'
 import ProductGrid from '@/components/catalog/ProductGrid'
@@ -32,55 +33,68 @@ type ProductRow = {
 export default async function Catalogo() {
   const supabase = await createClient()
 
-  const { data: heroBlock } = await supabase
-    .from('content_block')
-    .select(`
-      data,
-      image:imagen_id (
-        ruta_storage
-      )
-    `)
-    .eq('seccion', 'hero_catalogo')
-    .single()
+  // Las 4 consultas salen en paralelo. Antes eran 4 'await' en fila.
+  const [
+    { data: heroBlock },
+    { data: introBlock },
+    { data: ctaCatalogo },
+    { data, error },
+  ] = await Promise.all([
+    // HERO CATÁLOGO
+    safe(
+      supabase
+        .from('content_block')
+        .select(`
+          data,
+          image:imagen_id (
+            ruta_storage
+          )
+        `)
+        .eq('seccion', 'hero_catalogo')
+        .single()
+    ),
+
+    // INTRO CATÁLOGO
+    safe(
+      supabase
+        .from('content_block')
+        .select('data')
+        .eq('seccion', 'catalogo_intro')
+        .single()
+    ),
+
+    // CTA CATÁLOGO
+    safe(
+      supabase
+        .from('content_block')
+        .select('data')
+        .eq('seccion', 'cta_catalogo')
+        .single()
+    ),
+
+    // Traer productos publicados con su imagen principal
+    safe(
+      supabase
+        .from('product')
+        .select(`
+          id,
+          nombre,
+          slug,
+          descripcion_corta,
+          product_image (
+            imagen_principal,
+            orden,
+            image:imagen_id (
+              ruta_storage
+            )
+          )
+        `)
+        .eq('publicado', true)
+        .order('created_at', { ascending: false })
+    ),
+  ])
 
   const heroData = heroBlock?.data ?? {}
-
-  // ─────────────────────────────────────────────
-  // INTRO CATÁLOGO
-  // ─────────────────────────────────────────────
-  const { data: introBlock } = await supabase
-    .from('content_block')
-    .select('data')
-    .eq('seccion', 'catalogo_intro')
-    .single()
-
-  // ─────────────────────────────────────────────
-  // CTA CATÁLOGO
-  // ─────────────────────────────────────────────
-  const { data: ctaCatalogo } = await supabase
-    .from('content_block')
-    .select('data')
-    .eq('seccion', 'cta_catalogo')
-    .single()
-
-  // Traer productos publicados con su imagen principal
-  const { data, error } = await supabase
-    .from('product')
-    .select(`
-      id,
-      nombre,
-      slug,
-      descripcion_corta,
-      product_image (
-        imagen_principal,
-        orden,
-        image:imagen_id (
-          ruta_storage
-        )
-      )
-    `)
-    .eq('publicado', true)
-    .order('created_at', { ascending: false })
 
   if (error) {
     console.error('Error cargando catálogo:', error.message)

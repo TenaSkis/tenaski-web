@@ -68,7 +68,9 @@ export default function Footer() {
           </p>
 
           <Link
-            href="#"
+            href="https://www.instagram.com/tena.skis/"
+            target="_blank" // open in a new tab...
+            rel="noopener noreferrer"
             className="
               flex
               w-fit
@@ -114,6 +116,8 @@ export default function Footer() {
 
               <Link
                 href="http://danigostudios.netlify.app"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="
                   flex
                   items-center

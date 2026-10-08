@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { safe } from '@/lib/supabase/safe'
 import Hero from '@/components/home/Hero'
 import GalleryGrid, { ImageItem } from '@/components/galery/GalleryGrid'
 import CTA from '@/components/home/CTA'
@@ -14,38 +15,50 @@ function getImage(block: any): string | null {
 export default async function GaleriaPage() {
   const supabase = await createClient()
 
-  const { data: heroBlock } = await supabase
-    .from('content_block')
-    .select(`
-      data,
-      image:imagen_id (
-        ruta_storage
-      )
-    `)
-    .eq('seccion', 'hero_galeria')
-    .single()
+  // Las 3 consultas salen en paralelo. Antes eran 3 'await' en fila.
+  const [
+    { data: heroBlock },
+    { data: galleryRows },
+    { data: ctaGaleria },
+  ] = await Promise.all([
+    // HERO GALERÍA
+    safe(
+      supabase
+        .from('content_block')
+        .select(`
+          data,
+          image:imagen_id (
+            ruta_storage
+          )
+        `)
+        .eq('seccion', 'hero_galeria')
+        .single()
+    ),
 
-  const { data: galleryRows } = await supabase
-    .from('image')
-    .select('ruta_storage, texto_alt, galeria_size, galeria_orden')
-    .eq('en_galeria', true)
-    .is('deleted_at', null)
-    .order('galeria_orden', { ascending: true })
+    safe(
+      supabase
+        .from('image')
+        .select('ruta_storage, texto_alt, galeria_size, galeria_orden')
+        .eq('en_galeria', true)
+        .is('deleted_at', null)
+        .order('galeria_orden', { ascending: true })
+    ),
+
+    // CTA GALERÍA
+    safe(
+      supabase
+        .from('content_block')
+        .select('data')
+        .eq('seccion', 'cta_galeria')
+        .single()
+    ),
+  ])
 
   const images: ImageItem[] = (galleryRows ?? []).map((row) => ({
     src: row.ruta_storage,
     alt: row.texto_alt ?? '',
     size: (row.galeria_size ?? 'md') as 'lg' | 'md' | 'sm',
   }))
-
-  // ─────────────────────────────────────────────
-  // CTA GALERÍA
-  // ─────────────────────────────────────────────
-  const { data: ctaGaleria } = await supabase
-    .from('content_block')
-    .select('data')
-    .eq('seccion', 'cta_galeria')
-    .single()
 
   return (
     <main>

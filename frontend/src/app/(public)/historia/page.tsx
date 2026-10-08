@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { safe } from '@/lib/supabase/safe'
 import Hero from '@/components/home/Hero'
 import Story from '@/components/history/Story'
 import Values from '@/components/history/Values'
@@ -15,30 +16,50 @@ function getImage(block: any): string | null {
 
 export default async function Historia() {
   const supabase = await createClient()
-  const { data: heroBlock } = await supabase
-    .from('content_block')
-    .select(`
-      data,
-      image:imagen_id (
-        ruta_storage
-      )
-    `)
-    .eq('seccion', 'hero_historia')
-    .single()
 
-  const { data: historiaBlocks } = await supabase
-    .from('content_block')
-    .select(`
-      seccion,
-      data,
-      image:imagen_id (
-        ruta_storage
-      )
-    `)
-    .in('seccion', [
-      'historia_story',
-      'historia_values',
-      'historia_workshop',
+  // Las 3 consultas salen en paralelo. Antes eran 3 'await' en fila.
+  const [{ data: heroBlock }, { data: historiaBlocks }, { data: ctaHistoria }] =
+    await Promise.all([
+      // HERO HISTORIA
+      safe(
+        supabase
+          .from('content_block')
+          .select(`
+            data,
+            image:imagen_id (
+              ruta_storage
+            )
+          `)
+          .eq('seccion', 'hero_historia')
+          .single()
+      ),
+
+      // STORY + VALUES + WORKSHOP
+      safe(
+        supabase
+          .from('content_block')
+          .select(`
+            seccion,
+            data,
+            image:imagen_id (
+              ruta_storage
+            )
+          `)
+          .in('seccion', [
+            'historia_story',
+            'historia_values',
+            'historia_workshop',
+          ])
+      ),
+
+      // CTA HISTORIA
+      safe(
+        supabase
+          .from('content_block')
+          .select('data')
+          .eq('seccion', 'cta_historia')
+          .single()
+      ),
     ])
 
   const storyBlock =
@@ -47,15 +68,6 @@ export default async function Historia() {
     historiaBlocks?.find((block) => block.seccion === 'historia_values') ?? null
   const workshopBlock =
     historiaBlocks?.find((block) => block.seccion === 'historia_workshop') ?? null
-
-  // ─────────────────────────────────────────────
-  // CTA HISTORIA
-  // ─────────────────────────────────────────────
-  const { data: ctaHistoria } = await supabase
-    .from('content_block')
-    .select('data')
-    .eq('seccion', 'cta_historia')
-    .single()
 
   type HistoryValue = {
     number?: string
