@@ -140,7 +140,7 @@ export default async function ProductoPage({ params }: Props) {
   return (
     <main className="min-h-screen text-[var(--foreground)] pt-[80px] lg:pt-0">
       <div className="lg:min-h-screen lg:grid lg:grid-cols-2">
-        <div className="h-[60vw] lg:h-auto lg:sticky lg:top-0 lg:h-screen bg-[var(--surface)] overflow-hidden">
+        <div className="h-[85vw] lg:h-auto lg:sticky lg:top-0 lg:h-screen bg-[var(--surface)] overflow-hidden">
           <ProductGallery images={images} nombre={data.nombre} />
         </div>
 
