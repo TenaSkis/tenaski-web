@@ -5,7 +5,10 @@ import GalleryGrid, { ImageItem } from '@/components/galery/GalleryGrid'
 import CTA from '@/components/home/CTA'
 import ScrollToTop from '@/components/ui/ScrollToTop'
 
-function getImage(block: any): string | null {
+type ImageRef = { ruta_storage: string }
+type ImageBlock = { image?: ImageRef | ImageRef[] | null }
+
+function getImage(block: ImageBlock | null): string | null {
   const img = block?.image
   if (!img) return null
   if (Array.isArray(img)) return img[0]?.ruta_storage ?? null

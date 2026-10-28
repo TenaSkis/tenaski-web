@@ -53,9 +53,10 @@ export default function UploadGalleryImage({
       if (imageError) throw imageError
 
       onUploaded(image)
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { message?: string }
       console.error(err)
-      alert(err?.message || 'Error subiendo imagen')
+      alert(error?.message || 'Error subiendo imagen')
     } finally {
       setLoading(false)
       e.target.value = ''

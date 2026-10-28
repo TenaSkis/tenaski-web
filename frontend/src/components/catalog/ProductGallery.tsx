@@ -16,7 +16,7 @@ type Props = {
 // Píxeles que debe recorrer el dedo para que cuente como swipe
 const SWIPE_THRESHOLD = 50
 
-export default function ProductGallery({ images, nombre }: Props) {
+export default function ProductGallery({ images }: Props) {
   const [activeIndex, setActiveIndex] = useState(0)
 
   const prev = useCallback(() => {

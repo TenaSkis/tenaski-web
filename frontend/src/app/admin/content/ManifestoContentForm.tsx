@@ -46,7 +46,7 @@ function getImage(img: ImageRelation): string | null {
   return img.ruta_storage ?? null
 }
 
-export default function ManifestoContentForm({ block, imageLibrary }: Props) {
+export default function ManifestoContentForm({ block }: Props) {
   const [eyebrow, setEyebrow] = useState(block?.data?.eyebrow ?? '')
   const [titulo, setTitulo] = useState(block?.data?.titulo ?? '')
   const [descripcion, setDescripcion] = useState(block?.data?.descripcion ?? '')

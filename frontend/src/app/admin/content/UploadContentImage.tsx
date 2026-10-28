@@ -50,10 +50,11 @@ export default function UploadContentImage({
       if (imageError) throw imageError
 
       onUploaded(image.id, image.ruta_storage)
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { message?: string }
       console.log('UPLOAD ERROR RAW:', err)
-      console.log(JSON.stringify(err, Object.getOwnPropertyNames(err), 2))
-      alert(err?.message || 'Error subiendo imagen')
+      console.log(JSON.stringify(err, Object.getOwnPropertyNames(error), 2))
+      alert(error?.message || 'Error subiendo imagen')
     } finally {
       setLoading(false)
       e.target.value = ''

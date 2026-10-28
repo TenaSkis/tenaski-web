@@ -28,14 +28,19 @@ type Props = {
   imageLibrary: ImageRow[]
 }
 
-// Helper: extrae `ruta_storage` si `image` viene como objeto o como array
-function getImage(img: any): string | null {
+type ImageRelation =
+  | { id: string; ruta_storage: string }
+  | { id: string; ruta_storage: string }[]
+  | null
+  | undefined
+
+function getImage(img: ImageRelation): string | null {
   if (!img) return null
   if (Array.isArray(img)) return img[0]?.ruta_storage ?? null
   return img.ruta_storage ?? null
 }
 
-export default function StoryContentForm({ block, imageLibrary }: Props) {
+export default function StoryContentForm({ block }: Props) {
   const [eyebrow, setEyebrow] = useState(block?.data?.eyebrow ?? '')
   const [titulo, setTitulo] = useState(block?.data?.titulo ?? '')
   const [descripcion, setDescripcion] = useState(block?.data?.descripcion ?? '')

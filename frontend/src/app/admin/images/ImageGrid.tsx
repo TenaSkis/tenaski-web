@@ -122,9 +122,10 @@ export default function ImageGrid({ images: initialImages, usedIds }: Props) {
       await deleteImagePermanently(deleteTarget.id, deleteTarget.ruta_storage)
       setImages((prev) => prev.filter((i) => i.id !== deleteTarget.id))
       setDeleteTarget(null)
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { message?: string }
       console.error(err)
-      alert(err?.message || 'Error al eliminar la imagen.')
+      alert(error?.message || 'Error al eliminar la imagen.')
     } finally {
       setDeleteLoading(false)
     }

@@ -14,7 +14,14 @@ import ScrollToTop from '@/components/ui/ScrollToTop'
 // (Supabase a veces tipa la relación embebida como
 // array aunque en runtime devuelva un solo objeto)
 // ─────────────────────────────────────────────
-function getImage(block: any): string | null {
+type ImageRef = { ruta_storage: string }
+type ImageBlock = { image?: ImageRef | ImageRef[] | null }
+type FeaturedImageRow = {
+  imagen_principal: boolean
+  image?: ImageRef | null
+}
+
+function getImage(block?: ImageBlock | null): string | null {
   const img = block?.image
   if (!img) return null
   if (Array.isArray(img)) return img[0]?.ruta_storage ?? null
@@ -170,7 +177,7 @@ export default async function Home() {
 
   const featuredImage = featured
     ? (() => {
-        const imgs = featured.product_image as any[]
+        const imgs = featured.product_image as unknown as FeaturedImageRow[]
         const main = imgs.find((pi) => pi.imagen_principal) ?? imgs[0]
         return main?.image?.ruta_storage ?? '/img/manifestoimg.png'
       })()

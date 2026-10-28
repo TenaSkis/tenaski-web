@@ -182,7 +182,6 @@ function HeroPreview({ eyebrow, title, description, imageUrl }: PreviewProps) {
 
 export default function HeroContentForm({
   block,
-  imageLibrary,
   seccion,
   titulo,
 }: Props) {

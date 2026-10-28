@@ -163,7 +163,7 @@ export default function DesignModal({
   // solo el premium suma precio.
   const [finish, setFinish] = useState<Acabado | null>(null)
   const [premiumFinish, setPremiumFinish] = useState<AcabadoPremium | null>(null)
-  const [finishImgEl, setFinishImgEl] = useState<HTMLImageElement | null>(null)
+  const [loadedFinishImg, setFinishImgEl] = useState<HTMLImageElement | null>(null)
   const [brandLogoEl, setBrandLogoEl] = useState<HTMLImageElement | null>(null)
 
   const [selectedMedida, setSelectedMedida] = useState<string | null>(null)
@@ -188,13 +188,6 @@ export default function DesignModal({
 
   const activeSinGrabado = premiumFinish?.sinGrabado ?? finish?.sinGrabado ?? false
 
-  useEffect(() => {
-    if (activeSinGrabado && items.length > 0) {
-      setItems([])
-      setSelectedId(null)
-    }
-  }, [activeSinGrabado])
-
   const displayHeight = zoomed ? DISPLAY_HEIGHT_ZOOMED : DISPLAY_HEIGHT_NORMAL
   const displayWidth = Math.round((CANVAS_WIDTH / CANVAS_HEIGHT) * displayHeight)
 
@@ -215,8 +208,10 @@ export default function DesignModal({
   // ── Cargar imagen de fondo: prioriza el acabado premium ────────────
   const activeFinishImageUrl = premiumFinish?.imageUrl ?? finish?.imageUrl ?? null
 
+  const finishImgEl = activeFinishImageUrl ? loadedFinishImg : null
+
   useEffect(() => {
-    if (!activeFinishImageUrl) { setFinishImgEl(null); return }
+    if (!activeFinishImageUrl) return
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = () => setFinishImgEl(img)
@@ -739,6 +734,10 @@ export default function DesignModal({
                           onClick={() => {
                             setFinish(acabado)
                             setPremiumFinish(null)
+                            if (acabado.sinGrabado) {
+                              setItems([])
+                              setSelectedId(null)
+                            }
                           }}
                           className={`relative aspect-square overflow-hidden rounded-md border-2 transition ${
                             finish?.id === acabado.id
@@ -778,6 +777,10 @@ export default function DesignModal({
                           onClick={() => {
                             setPremiumFinish(acabado)
                             setFinish(null)
+                            if (acabado.sinGrabado) {
+                              setItems([])
+                              setSelectedId(null)
+                            }
                           }}
                           className={`relative aspect-square overflow-hidden rounded-md border-2 transition ${
                             premiumFinish?.id === acabado.id

@@ -181,7 +181,7 @@ export default function AcabadosContentForm({ block, acabados }: Props) {
           Acabados ({acabados.length})
         </h3>
         <p className="mt-1 text-xs text-zinc-500">
-          "Sin grabado" oculta las opciones de añadir imagen/texto en espátula y
+          &quot;Sin grabado&quot; oculta las opciones de añadir imagen/texto en espátula y
           cola cuando el cliente elige ese acabado en el diseñador.
         </p>
 
@@ -292,7 +292,7 @@ export default function AcabadosContentForm({ block, acabados }: Props) {
                 onChange={(e) => setNuevoSinGrabado(e.target.checked)}
                 className="accent-[#C4A882]"
               />
-              Marcar como "sin grabado" (no permitirá personalizar espátula/cola)
+              Marcar como &quot;sin grabado&quot; (no permitirá personalizar espátula/cola)
             </label>
           </div>
 

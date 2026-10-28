@@ -45,6 +45,16 @@ type LibraryImage = {
   ruta_storage: string
 }
 
+type ProductImageRow = {
+  imagen_id: string
+  orden: number
+  imagen_principal: boolean
+  image: {
+    ruta_storage: string
+    nombre_archivo: string
+  } | null
+}
+
 function makeLocalId() {
   return Math.random().toString(36).slice(2)
 }
@@ -142,8 +152,9 @@ export default function ProductTable({ products }: ProductTableProps) {
       `)
       .eq('producto_id', product.id)
       .order('orden', { ascending: true })
+      .overrideTypes<ProductImageRow[], { merge: false }>()
 
-    const mapped = (piData ?? []).map((row: any) => ({
+    const mapped = (piData ?? []).map((row) => ({
       imagen_id: row.imagen_id,
       ruta_storage: row.image?.ruta_storage ?? '',
       nombre_archivo: row.image?.nombre_archivo ?? '',
@@ -568,7 +579,7 @@ export default function ProductTable({ products }: ProductTableProps) {
                     Medidas disponibles (opcional)
                   </label>
                   <p className="mt-1 text-xs text-zinc-600">
-                    Si no rellenas ninguna, en "Crea tu diseño" no aparecerá selector de medida.
+                    Si no rellenas ninguna, en &quot;Crea tu diseño&quot; no aparecerá selector de medida.
                   </p>
 
                   <div className="mt-3 grid grid-cols-3 gap-3">
@@ -676,12 +687,13 @@ export default function ProductTable({ products }: ProductTableProps) {
                               type="button"
                               onClick={() => setPrincipalImageId(img.imagen_id)}
                               title={isPrincipal ? 'Imagen principal' : 'Marcar como principal'}
+                              aria-label={isPrincipal ? 'Imagen principal' : 'Marcar como imagen principal'}
                               className={`
                                 absolute top-1.5 left-1.5 w-6 h-6 rounded-full
                                 flex items-center justify-center text-xs transition
                                 ${isPrincipal
                                   ? 'bg-[#C4A882] text-[#0F0F0F] opacity-100'
-                                  : 'bg-black/70 text-white/50 opacity-0 group-hover:opacity-100 hover:text-[#C4A882]'
+                                  : 'bg-black/70 text-white/50 opacity-100 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 focus-visible:opacity-100 hover:text-[#C4A882]'}
                                 }
                               `}
                             >
@@ -698,10 +710,10 @@ export default function ProductTable({ products }: ProductTableProps) {
                               flex items-center justify-center transition
                               ${marked
                                 ? 'bg-red-600 text-white opacity-100'
-                                : 'bg-black/70 text-white opacity-0 group-hover:opacity-100'
+                                : 'bg-black/70 text-white opacity-100 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 focus-visible:opacity-100'
                               }
                             `}
-                            aria-label={marked ? 'Restaurar imagen' : 'Eliminar imagen'}
+                            aria-label={marked ? 'Restaurar imagen del producto' : 'Marcar imagen para eliminar'}
                             title={marked ? 'Clic para restaurar' : 'Clic para eliminar'}
                           >
                             {marked ? '↩' : '✕'}
@@ -760,7 +772,8 @@ export default function ProductTable({ products }: ProductTableProps) {
                         <button
                           type="button"
                           onClick={() => removePending(pf.localId)}
-                          className="absolute top-1.5 right-1.5 bg-black/70 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                          className="absolute top-1.5 right-1.5 bg-black/70 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center opacity-100 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:w-8 pointer-coarse:h-8 transition"
+                          aria-label={`Quitar imagen pendiente: ${pf.file.name}`}
                         >
                           ✕
                         </button>

@@ -22,7 +22,11 @@ type ImageRow = {
   }
 }
 
-function getImage(block: any): string | null {
+type ImageRef = { ruta_storage: string }
+
+function getImage(
+  block: { image?: ImageRef | ImageRef[] | null } | null
+): string | null {
   const img = block?.image
   if (!img) return null
   if (Array.isArray(img)) return img[0]?.ruta_storage ?? null

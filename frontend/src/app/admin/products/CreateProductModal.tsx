@@ -60,9 +60,6 @@ export default function CreateProductModal({ open, onClose }: Props) {
   const [selectedExisting, setSelectedExisting] = useState<Set<string>>(new Set())
   const [loadingExisting, setLoadingExisting] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
-  const [editMedidas, setEditMedidas] = useState<string[]>([])
-  const [editPrecioExtraEspatula, setEditPrecioExtraEspatula] = useState('')
-  const [editPrecioExtraCola, setEditPrecioExtraCola] = useState('')
 
   const [loading, setLoading] = useState(false)
 
@@ -387,7 +384,7 @@ export default function CreateProductModal({ open, onClose }: Props) {
                   Medidas disponibles (opcional)
                 </label>
                 <p className="mt-1 text-xs text-zinc-600">
-                  Si no rellenas ninguna, en "Crea tu diseño" no aparecerá selector de medida.
+                  Si no rellenas ninguna, en &quot;Crea tu diseño&quot; no aparecerá selector de medida.
                 </p>
 
                 <div className="mt-3 grid grid-cols-3 gap-3">
@@ -517,9 +514,9 @@ export default function CreateProductModal({ open, onClose }: Props) {
                             absolute top-1.5 right-1.5
                             bg-black/70 text-white text-xs rounded-full
                             w-6 h-6 flex items-center justify-center
-                            opacity-0 group-hover:opacity-100 transition
+                            opacity-100 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:w-8 pointer-coarse:h-8 transition
                           "
-                          aria-label="Eliminar imagen"
+                          aria-label={`Quitar imagen pendiente: ${pf.file.name}`}
                         >
                           ✕
                         </button>

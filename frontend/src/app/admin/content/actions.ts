@@ -6,12 +6,12 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function updateContentBlock(
   seccion: string,
-  data: Record<string, any>,
+  data: Record<string, unknown>,
   imagenId?: string | null
 ) {
   const supabase = await createClient()
 
-  const updatePayload: Record<string, any> = {
+  const updatePayload: Record<string, unknown> = {
     data,
     updated_at: new Date().toISOString(),
   }

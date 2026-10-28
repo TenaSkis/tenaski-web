@@ -65,7 +65,7 @@ export default function Hero({
             style={{ 
               backgroundImage: `url(${imageUrl})`,
               opacity: 0.55, // <-- Aquí le damos el toque justo de opacidad para que trasluzca la madera
-               
+
               // Creamos un fundido suave: arriba 100% visible, abajo se desvanece por completo
               maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
               WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)'
@@ -86,10 +86,11 @@ export default function Hero({
       {/* ── CONTENIDO ─────────────────────────────────────── */}
       {/* El `pt-28` (112px) reserva los 89px que ocupa el navbar sin
           scrollear, más el aire justo para que el eyebrow nunca quede
-          por debajo de la barra. */}
+          por debajo de la barra. `hero-fit-frame` reduce esos paddings
+          en viewports bajos (ver globals.css). */}
       <div
         ref={frameRef}
-        className="absolute inset-0 z-10 flex flex-col justify-end px-6 pb-30 pt-28 md:pb-24"
+        className="hero-fit-frame absolute inset-0 z-10 flex flex-col justify-end px-6 pb-30 pt-28 md:pb-24"
       >
 
         <div ref={contentRef} className="hero-fit mx-auto w-full max-w-6xl">
@@ -99,8 +100,9 @@ export default function Hero({
             {eyebrow}
           </p>
 
-          {/* Título hero: escala con breakpoints y baja de peldaño si no cabe */}
-          <h1 className="hero-section__title">
+          {/* Título hero: escala con breakpoints y baja de peldaño si no cabe.
+              `break-words` evita que una palabra larga desborde el bloque. */}
+          <h1 className="hero-section__title break-words">
             {title}
           </h1>
 

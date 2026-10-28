@@ -335,6 +335,29 @@ body {
   }
 }
 
+/* ── Hero: paddings verticales reducidos en viewports bajos ─────────── */
+/* Sin @layer a propósito: prevalece sobre las utilidades pt-28 / pb-30 / md:pb-24. */
+@media (max-height: 760px) {
+  .hero-fit-frame {
+    padding-top: 6rem;
+    padding-bottom: 5rem;
+  }
+}
+
+@media (max-height: 600px) {
+  .hero-fit-frame {
+    padding-top: 5.5rem;
+    padding-bottom: 2.5rem;
+  }
+}
+
+@media (max-height: 460px) {
+  .hero-fit-frame {
+    padding-top: 5.5rem;
+    padding-bottom: 0.5rem;
+  }
+}
+
 .img-premium {
   filter: brightness(0.85) contrast(0.9) saturate(0.9);
   transform: scale(1.03);
