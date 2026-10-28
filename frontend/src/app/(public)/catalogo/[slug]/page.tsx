@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
+import { safe } from '@/lib/supabase/safe'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import { cache } from 'react'
 import ProductGallery from '@/components/catalog/ProductGallery'
 import DesignModal from '@/components/catalog/DesignModal'
 import SimpleOrderModal from '@/components/catalog/SimpleOrderModal'
@@ -31,30 +33,13 @@ function getImage(
   return img.ruta_storage ?? null
 }
 
-export async function generateMetadata({ params }: Props) {
-  const { slug } = await params
+// `cache()` de React deduplica la llamada dentro del mismo render: antes
+// generateMetadata y la página pedían el producto por separado y se
+// pagaba el viaje a Supabase dos veces.
+const getProducto = cache(async (slug: string) => {
   const supabase = await createClient()
 
   const { data } = await supabase
-    .from('product')
-    .select('nombre, descripcion_corta')
-    .eq('slug', slug)
-    .eq('publicado', true)
-    .single()
-
-  if (!data) return {}
-
-  return {
-    title: `${data.nombre} — Tena Skis`,
-    description: data.descripcion_corta ?? undefined,
-  }
-}
-
-export default async function ProductoPage({ params }: Props) {
-  const { slug } = await params
-  const supabase = await createClient()
-
-  const { data, error } = await supabase
     .from('product')
     .select(`
       id,
@@ -80,7 +65,51 @@ export default async function ProductoPage({ params }: Props) {
     .eq('publicado', true)
     .single()
 
-  if (error || !data) notFound()
+  return data
+})
+
+export async function generateMetadata({ params }: Props) {
+  const { slug } = await params
+
+  const data = await getProducto(slug)
+
+  if (!data) return {}
+
+  return {
+    title: `${data.nombre} — Tena Skis`,
+    description: data.descripcion_corta ?? undefined,
+  }
+}
+
+export default async function ProductoPage({ params }: Props) {
+  const { slug } = await params
+  const supabase = await createClient()
+
+  // El producto viene de la misma función cacheada que usa
+  // generateMetadata, así que no se vuelve a pedir. Los dos listings de
+  // acabados salen en paralelo entre sí.
+  const [data, { data: acabadosRows }, { data: acabadosPremiumRows }] =
+    await Promise.all([
+      getProducto(slug),
+
+      safe(
+        supabase
+          .from('acabado')
+          .select('id, nombre, sin_grabado, image:imagen_id (ruta_storage)')
+          .eq('es_premium', false)
+          .order('orden', { ascending: true })
+      ),
+
+      safe(
+        supabase
+          .from('acabado')
+          .select('id, nombre, precio_extra, sin_grabado, image:imagen_id (ruta_storage)')
+          .eq('es_premium', true)
+          .order('orden', { ascending: true })
+      ),
+    ])
+
+  if (!data) notFound()
 
   const images = (data.product_image as unknown as ImageRow[])
     .sort((a, b) => {
@@ -95,29 +124,14 @@ export default async function ProductoPage({ params }: Props) {
     }))
 
   // ─────────────────────────────────────────────
-  // ACABADOS NORMALES (para "Crea tu diseño")
+  // ACABADOS (para "Crea tu diseño")
   // ─────────────────────────────────────────────
-  const { data: acabadosRows } = await supabase
-    .from('acabado')
-    .select('id, nombre, sin_grabado, image:imagen_id (ruta_storage)')
-    .eq('es_premium', false)
-    .order('orden', { ascending: true })
-
   const acabados = (acabadosRows ?? []).map((a) => ({
   id: a.id,
   nombre: a.nombre,
   imageUrl: getImage(a) ?? null,
   sinGrabado: a.sin_grabado,
 }))
-
-  // ─────────────────────────────────────────────
-  // ACABADOS PREMIUM (para "Crea tu diseño")
-  // ─────────────────────────────────────────────
-  const { data: acabadosPremiumRows } = await supabase
-    .from('acabado')
-    .select('id, nombre, precio_extra, sin_grabado, image:imagen_id (ruta_storage)')
-    .eq('es_premium', true)
-    .order('orden', { ascending: true })
 
   const acabadosPremium = (acabadosPremiumRows ?? []).map((a) => ({
   id: a.id,
@@ -130,7 +144,7 @@ export default async function ProductoPage({ params }: Props) {
   return (
     <main className="min-h-screen text-[var(--foreground)] pt-[80px] lg:pt-0">
       <div className="lg:min-h-screen lg:grid lg:grid-cols-2">
-        <div className="h-[60vw] lg:h-auto lg:sticky lg:top-0 lg:h-screen bg-[var(--surface)] overflow-hidden">
+        <div className="h-[100vw] lg:h-auto lg:sticky lg:top-0 lg:h-screen bg-[var(--surface)] overflow-hidden">
           <ProductGallery images={images} nombre={data.nombre} />
         </div>
 

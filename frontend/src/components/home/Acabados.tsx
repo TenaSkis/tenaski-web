@@ -34,8 +34,9 @@ export default function Acabados({ eyebrow, description, acabados }: Props) {
                   <Image
                     src={acabado.imageUrl}
                     alt={acabado.nombre}
-                    fill
-                    className="img-premium object-cover"
+                    width={1200}
+                    height={1200}
+                    className="h-auto w-full transition-transform duration-700 group-hover:scale-108"
                   />
                 ) : (
                   <div className="home-section__image-placeholder flex h-full w-full items-center justify-center text-xs">
