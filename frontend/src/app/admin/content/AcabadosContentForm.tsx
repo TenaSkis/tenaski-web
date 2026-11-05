@@ -198,6 +198,7 @@ export default function AcabadosContentForm({ block, acabados }: Props) {
                       src={getImage(acabado.image)!}
                       alt={acabado.nombre}
                       fill
+                      sizes="56px"
                       className="object-cover"
                     />
                   ) : (
@@ -307,6 +308,7 @@ export default function AcabadosContentForm({ block, acabados }: Props) {
                   src={nuevaImagenPreview}
                   alt="Nuevo acabado"
                   fill
+                  sizes="112px"
                   className="object-cover"
                 />
               ) : (

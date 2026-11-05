@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
   addToGallery,
@@ -175,10 +176,12 @@ export default function ImageGrid({ images: initialImages, usedIds }: Props) {
                 className="rounded-xl border border-zinc-800 bg-zinc-900 overflow-hidden flex flex-col"
               >
                 <div className="relative aspect-square bg-zinc-800">
-                  <img
+                  <Image
                     src={img.ruta_storage}
                     alt={img.texto_alt ?? img.nombre_archivo}
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="(min-width: 1536px) 242px, (min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw"
+                    className="object-cover"
                   />
                   {img.en_galeria && (
                     <span className="absolute top-2 left-2 rounded-full bg-[#C4A882] px-2 py-0.5 text-[10px] font-semibold text-[#0F0F0F]">
@@ -236,10 +239,12 @@ export default function ImageGrid({ images: initialImages, usedIds }: Props) {
             <h2 className="text-lg font-semibold text-white">Ajustes de galería</h2>
 
             <div className="relative mt-4 h-40 w-full overflow-hidden rounded-lg border border-zinc-700 bg-zinc-800">
-              <img
+              <Image
                 src={galleryTarget.ruta_storage}
                 alt={alt}
-                className="h-full w-full object-cover"
+                fill
+                sizes="(min-width: 768px) 416px, calc(100vw - 80px)"
+                className="object-cover"
               />
             </div>
 

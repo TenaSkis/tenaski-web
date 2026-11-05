@@ -6,12 +6,6 @@ import { updateContentBlock } from './actions'
 import UploadContentImage from './UploadContentImage'
 import Switch from './Switch'
 
-type ImageRow = {
-  id: string
-  ruta_storage: string
-  nombre_archivo: string
-}
-
 // Misma idea que en los otros forms: `image` puede venir como objeto
 // o como array según cómo PostgREST resuelva la FK en runtime.
 type ImageRelation =
@@ -43,7 +37,6 @@ type ProcessBlock = {
 type Props = {
   block: ProcessBlock
   steps: Record<string, Step>
-  imageLibrary: ImageRow[]
 }
 
 // ─────────────────────────────────────────────
@@ -192,6 +185,7 @@ export default function ProcessContentForm({
                         src={imagePreview}
                         alt={`Imagen ${key}`}
                         fill
+                        sizes="(min-width: 1280px) 590px, (min-width: 768px) 45vw, calc(100vw - 80px)"
                         className="object-cover"
                       />
                     ) : (

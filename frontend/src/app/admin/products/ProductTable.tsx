@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import CreateProductModal from './CreateProductModal'
@@ -671,12 +672,14 @@ export default function ProductTable({ products }: ProductTableProps) {
                       const marked = removedImageIds.has(img.imagen_id)
                       const isPrincipal = principalImageId === img.imagen_id
                       return (
-                        <div key={img.imagen_id} className="relative group">
-                          <img
+                        <div key={img.imagen_id} className="relative aspect-square group">
+                          <Image
                             src={img.ruta_storage}
                             alt={img.nombre_archivo}
+                            fill
+                            sizes="(min-width: 640px) 150px, 25vw"
                             className={`
-                              w-full aspect-square object-cover rounded-lg border transition
+                              object-cover rounded-lg border transition
                               ${marked ? 'opacity-30 border-red-700' : isPrincipal ? 'border-[#C4A882]' : 'border-zinc-800'}
                             `}
                           />
@@ -801,7 +804,7 @@ export default function ProductTable({ products }: ProductTableProps) {
                           onClick={() => toggleLibrary(img.id)}
                           disabled={alreadyLinked}
                           className={`
-                            relative rounded-lg overflow-hidden border-2 transition
+                            relative aspect-square rounded-lg overflow-hidden border-2 transition
                             ${alreadyLinked
                               ? 'opacity-30 cursor-not-allowed border-transparent'
                               : selected ? 'border-white' : 'border-transparent opacity-60 hover:opacity-90'
@@ -809,7 +812,13 @@ export default function ProductTable({ products }: ProductTableProps) {
                           `}
                           title={alreadyLinked ? 'Ya está en el producto' : ''}
                         >
-                          <img src={img.ruta_storage} alt={img.nombre_archivo} className="w-full aspect-square object-cover" />
+                          <Image
+                            src={img.ruta_storage}
+                            alt={img.nombre_archivo}
+                            fill
+                            sizes="(min-width: 640px) 150px, 25vw"
+                            className="object-cover"
+                          />
                           {selected && (
                             <div className="absolute inset-0 bg-white/10 flex items-center justify-center">
                               <span className="text-white text-xl">✓</span>

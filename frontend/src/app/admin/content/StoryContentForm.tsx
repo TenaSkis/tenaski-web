@@ -5,12 +5,6 @@ import Image from 'next/image'
 import { updateContentBlock } from './actions'
 import UploadContentImage from './UploadContentImage'
 
-type ImageRow = {
-  id: string
-  ruta_storage: string
-  nombre_archivo: string
-}
-
 type StoryBlock = {
   id: string
   seccion: string
@@ -25,7 +19,6 @@ type StoryBlock = {
 
 type Props = {
   block: StoryBlock
-  imageLibrary: ImageRow[]
 }
 
 type ImageRelation =
@@ -135,6 +128,7 @@ export default function StoryContentForm({ block }: Props) {
                 src={previewImage}
                 alt="Story image"
                 fill
+                sizes="(min-width: 1280px) 590px, (min-width: 768px) 45vw, calc(100vw - 80px)"
                 className="object-cover"
               />
             ) : (

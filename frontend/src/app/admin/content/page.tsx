@@ -39,15 +39,6 @@ export default async function ContentPage() {
     ])
 
   // ─────────────────────────────────────────────
-  // LIBRERÍA DE IMÁGENES
-  // ─────────────────────────────────────────────
-  const { data: imageLibrary } = await supabase
-    .from('image')
-    .select('id, ruta_storage, nombre_archivo')
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false })
-
-  // ─────────────────────────────────────────────
   // MANIFESTO (HOME)
   // ─────────────────────────────────────────────
   const { data: manifesto } = await supabase
@@ -221,18 +212,15 @@ export default async function ContentPage() {
           titulo="Cabecera · Home"
           seccion="hero_home"
           block={getBlock('hero_home')}
-          imageLibrary={imageLibrary ?? []}
         />
 
         <ManifestoContentForm
           block={manifesto ?? null}
-          imageLibrary={imageLibrary ?? []}
         />
 
         <ProcessContentForm
           block={process}
           steps={steps}
-          imageLibrary={imageLibrary ?? []}
         />
 
         <AcabadosContentForm
@@ -273,19 +261,16 @@ export default async function ContentPage() {
           titulo="Cabecera · Historia"
           seccion="hero_historia"
           block={getBlock('hero_historia')}
-          imageLibrary={imageLibrary ?? []}
         />
 
         <StoryContentForm
           block={storyBlock}
-          imageLibrary={imageLibrary ?? []}
         />
 
         <ValuesContentForm block={valuesBlock} />
 
         <WorkshopContentForm
           block={workshopBlock}
-          imageLibrary={imageLibrary ?? []}
         />
 
         <CTAContentForm
@@ -314,7 +299,6 @@ export default async function ContentPage() {
           titulo="Cabecera · Catálogo"
           seccion="hero_catalogo"
           block={getBlock('hero_catalogo')}
-          imageLibrary={imageLibrary ?? []}
         />
 
         <IntroContentForm
@@ -356,7 +340,6 @@ export default async function ContentPage() {
           titulo="Cabecera · Galería"
           seccion="hero_galeria"
           block={getBlock('hero_galeria')}
-          imageLibrary={imageLibrary ?? []}
         />
 
         <CTAContentForm
@@ -385,7 +368,6 @@ export default async function ContentPage() {
           titulo="Cabecera · Contacto"
           seccion="hero_contacto"
           block={getBlock('hero_contacto')}
-          imageLibrary={imageLibrary ?? []}
         />
       </SectionGroup>
     </div>

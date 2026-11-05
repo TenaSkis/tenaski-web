@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useCallback } from 'react'
+import Image from 'next/image'
 import { createProductWithImages } from './actions'
 import { supabase } from '@/lib/supabase/client'
 
@@ -550,7 +551,7 @@ export default function CreateProductModal({ open, onClose }: Props) {
                           type="button"
                           onClick={() => toggleExisting(img.id)}
                           className={`
-                            relative rounded-lg overflow-hidden border-2 transition
+                            relative aspect-square rounded-lg overflow-hidden border-2 transition
                             ${selected
                               ? 'border-white'
                               : 'border-transparent opacity-60 hover:opacity-90'
@@ -558,10 +559,12 @@ export default function CreateProductModal({ open, onClose }: Props) {
                           `}
                           aria-label={img.nombre_archivo}
                         >
-                          <img
+                          <Image
                             src={img.ruta_storage}
                             alt={img.texto_alt ?? img.nombre_archivo}
-                            className="w-full aspect-square object-cover"
+                            fill
+                            sizes="(min-width: 640px) 150px, 25vw"
+                            className="object-cover"
                           />
                           {selected && (
                             <div className="absolute inset-0 bg-white/10 flex items-center justify-center">

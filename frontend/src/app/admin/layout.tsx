@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import Image from 'next/image'
 import Link from 'next/link'
 import LogoutButton from './LogoutButton'
 
@@ -44,7 +45,14 @@ export default async function AdminLayout({
               Mensajes
             </Link>
             <Link href="/" target="_blank" rel="noreferrer" className="mt-2 flex items-center gap-2 rounded-2xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-100 hover:bg-zinc-900 hover:text-white transition">
-              <img src="/img/logoo.png" alt="Tenaski" className="h-4 w-4 object-contain" />
+              <Image
+                src="/img/logoo.png"
+                alt="Tenaski"
+                width={500}
+                height={500}
+                sizes="16px"
+                className="h-4 w-4 object-contain"
+              />
               Ver Web
             </Link>
 
@@ -58,9 +66,12 @@ export default async function AdminLayout({
           <div>
             <div className="p-8 border-b border-zinc-800">
               <div className="flex items-center gap-3">
-                <img
+                <Image
                   src="/img/logoo.png"
                   alt="Tenaski"
+                  width={500}
+                  height={500}
+                  sizes="40px"
                   className="w-10 h-10 object-contain"
                 />
                 <div>
@@ -87,7 +98,14 @@ export default async function AdminLayout({
                 Mensajes
               </Link>
               <Link href="/" target="_blank" rel="noreferrer" className="mt-2 flex items-center gap-2 rounded-2xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-100 hover:bg-zinc-900 hover:text-white transition">
-                <img src="/img/logoo.png" alt="Tenaski" className="h-4 w-4 object-contain" />
+                <Image
+                  src="/img/logoo.png"
+                  alt="Tenaski"
+                  width={500}
+                  height={500}
+                  sizes="16px"
+                  className="h-4 w-4 object-contain"
+                />
                 Ver Web
               </Link>
             </nav>

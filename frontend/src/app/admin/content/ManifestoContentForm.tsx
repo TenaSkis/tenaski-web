@@ -5,12 +5,6 @@ import Image from 'next/image'
 import { updateContentBlock } from './actions'
 import UploadContentImage from './UploadContentImage'
 
-type ImageRow = {
-  id: string
-  ruta_storage: string
-  nombre_archivo: string
-}
-
 // Misma idea que en HeroContentForm: la relación `image` puede venir
 // como objeto o como array según cómo Supabase/PostgREST la resuelva.
 type ImageRelation =
@@ -33,7 +27,6 @@ type ManifestoBlock = {
 
 type Props = {
   block: ManifestoBlock
-  imageLibrary: ImageRow[]
 }
 
 // ─────────────────────────────────────────────
@@ -149,6 +142,7 @@ export default function ManifestoContentForm({ block }: Props) {
                 src={previewImage}
                 alt="Manifesto image"
                 fill
+                sizes="(min-width: 1280px) 590px, (min-width: 768px) 45vw, calc(100vw - 80px)"
                 className="object-cover"
               />
             ) : (
