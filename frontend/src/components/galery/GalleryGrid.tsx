@@ -21,9 +21,9 @@ export default function GalleryGrid({ images }: GalleryGridProps) {
 
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 auto-rows-[180px]">
 
-          {images.map((img) => (
+          {images.map((img, index) => (
             <GalleryItem
-              key={img.src}
+              key={`${img.src}-${index}`}
               src={img.src}
               alt={img.alt}
               size={img.size}

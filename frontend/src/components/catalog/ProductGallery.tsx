@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, type TouchEvent } from 'react'
+import Image from 'next/image'
 
 type GalleryImage = {
   url: string
@@ -98,12 +99,14 @@ export default function ProductGallery({ images }: Props) {
         onTouchEnd={onTouchEnd}
         onTouchCancel={onTouchEnd}
       >
-        <img
-          key={activeIndex}
+        <Image
           src={active.url}
           alt={active.alt}
+          fill
+          sizes="(min-width: 1024px) 50vw, 100vw"
+          preload={activeIndex === 0}
           className={`
-            w-full h-full object-cover select-none pointer-events-none
+            object-cover select-none pointer-events-none
             ${isDragging ? '' : 'transition-transform duration-300 ease-out'}
           `}
           style={{ transform: `translateX(${dragX}px)` }}
@@ -181,10 +184,14 @@ export default function ProductGallery({ images }: Props) {
               `}
               aria-label={`Ver imagen ${i + 1}`}
             >
-              <img
+              <Image
                 src={img.url}
                 alt={img.alt}
-                className="w-full h-full object-cover"
+                width={56}
+                height={56}
+                sizes="56px"
+                loading="lazy"
+                className="h-full w-full object-cover"
               />
             </button>
           ))}
