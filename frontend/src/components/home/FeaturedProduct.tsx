@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import SectionTitle from '@/components/ui/SectionTitle'
 import SectionText from '../ui/SectionTest'
@@ -41,9 +42,12 @@ export default function FeaturedProduct({
 
             {/* Imagen o placeholder */}
             {imageUrl ? (
-              <div
-                className="img-premium h-full w-full bg-cover bg-center transition-all duration-700 group-hover:scale-[1.08]"
-                style={{ backgroundImage: `url(${imageUrl})` }}
+              <Image
+                src={imageUrl}
+                alt=""
+                fill
+                sizes="(min-width: 1152px) 512px, (min-width: 1024px) calc(50vw - 64px), calc(100vw - 48px)"
+                className="img-premium object-cover transition-all duration-700 group-hover:scale-[1.08]"
               />
             ) : (
               <div className="home-section__image-placeholder flex h-full items-center justify-center">

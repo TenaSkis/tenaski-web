@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 
 const navLinks = [
@@ -17,9 +18,12 @@ export default function Footer() {
         {/* Bloque 1: Marca */}
         <div className="md:col-span-1">
           <Link href="/" className="flex w-fit items-center gap-3">
-            <img
+            <Image
               src="/img/logoo.png"
               alt="Tena Skis"
+              width={500}
+              height={500}
+              sizes="28px"
               className="h-7 w-auto object-contain"
             />
 
@@ -128,9 +132,12 @@ export default function Footer() {
                   hover:text-[var(--link-muted)]
                 "
               >
-                <img
+                <Image
                   src="/img/danigostudios-logo.png"
                   alt="Danigo Studios"
+                  width={455}
+                  height={549}
+                  sizes="10px"
                   className="h-3 w-auto object-contain opacity-50"
                 />
 
