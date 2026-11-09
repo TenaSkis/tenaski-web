@@ -22,9 +22,16 @@ type ImageRow = {
   galeria_orden: number
 }
 
+type UsageCounts = {
+  productos: number
+  contenido: number
+  acabados: number
+}
+
 type Props = {
   images: ImageRow[]
-  usedIds: string[]
+  usageById: Record<string, UsageCounts>
+  usageCheckFailed: boolean
 }
 
 const SIZE_LABEL: Record<GallerySize, string> = {
@@ -33,7 +40,27 @@ const SIZE_LABEL: Record<GallerySize, string> = {
   sm: 'Pequeña',
 }
 
-export default function ImageGrid({ images: initialImages, usedIds }: Props) {
+function getUsageReasons(
+  usage: UsageCounts | undefined,
+  enGaleria: boolean
+): string[] {
+  const reasons: string[] = []
+
+  if (enGaleria) reasons.push('publicada en la galería')
+  if (usage?.acabados) reasons.push(`${usage.acabados} acabado(s)`)
+  if (usage?.productos) reasons.push(`${usage.productos} producto(s)`)
+  if (usage?.contenido) {
+    reasons.push(`${usage.contenido} bloque(s) de contenido`)
+  }
+
+  return reasons
+}
+
+export default function ImageGrid({
+  images: initialImages,
+  usageById,
+  usageCheckFailed,
+}: Props) {
   const router = useRouter()
   const [images, setImages] = useState<ImageRow[]>(initialImages)
 
@@ -102,15 +129,24 @@ export default function ImageGrid({ images: initialImages, usedIds }: Props) {
     setCheckingUsage(true)
     try {
       const usage = await getImageUsage(img.id)
-      if (usage.inUse) {
-        const partes = []
-        if (usage.productos) partes.push(`${usage.productos} producto(s)`)
-        if (usage.paginas) partes.push(`${usage.paginas} página(s)`)
-        if (usage.contenido) partes.push(`${usage.contenido} bloque(s) de contenido`)
-        setDeleteBlockedReason(`En uso por: ${partes.join(', ')}.`)
+
+      if (!usage.complete) {
+        setDeleteBlockedReason(
+          'No se pudo comprobar si la imagen está en uso. No se permite eliminarla.'
+        )
+        return
+      }
+
+      const reasons = getUsageReasons(usage, usage.enGaleria)
+
+      if (reasons.length > 0) {
+        setDeleteBlockedReason(`En uso: ${reasons.join(', ')}.`)
       }
     } catch (err) {
       console.error(err)
+      setDeleteBlockedReason(
+        'No se pudo comprobar si la imagen está en uso. No se permite eliminarla.'
+      )
     } finally {
       setCheckingUsage(false)
     }
@@ -163,13 +199,29 @@ export default function ImageGrid({ images: initialImages, usedIds }: Props) {
         />
       </div>
 
+      {/* ── Aviso: comprobación global incompleta ───── */}
+      {usageCheckFailed && (
+        <p className="rounded-lg border border-amber-900/60 bg-amber-950/40 px-3 py-2 text-xs text-amber-300">
+          No se pudo comprobar el uso de todas las imágenes. El servidor
+          seguirá bloqueando el borrado de las que estén en uso.
+        </p>
+      )}
+
       {/* ── Grid ────────────────────────────────────── */}
       {images.length === 0 ? (
         <p className="text-zinc-600 text-sm">No hay imágenes aún.</p>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {images.map((img) => {
-            const isUsed = usedIds.includes(img.id)
+            const usage = usageById[img.id]
+            const reasons = getUsageReasons(usage, img.en_galeria)
+            // Solo bloqueamos por referencias conocidas de esta imagen.
+            // Si una comprobación global falló, el servidor es la
+            // protección definitiva al confirmar el borrado.
+            const isBlocked = reasons.length > 0
+            const blockReason = isBlocked
+              ? `No se puede eliminar: ${reasons.join(', ')}.`
+              : ''
             return (
               <div
                 key={img.id}
@@ -215,12 +267,18 @@ export default function ImageGrid({ images: initialImages, usedIds }: Props) {
 
                     <button
                       onClick={() => openDeleteModal(img)}
-                      disabled={isUsed}
-                      title={isUsed ? 'En uso, no se puede eliminar' : ''}
+                      disabled={isBlocked}
+                      title={blockReason}
                       className="w-full text-xs font-medium rounded-md bg-zinc-800 text-zinc-400 hover:bg-red-900/60 hover:text-red-400 transition px-2 py-1.5 disabled:opacity-30 disabled:hover:bg-zinc-800 disabled:hover:text-zinc-400 disabled:cursor-not-allowed"
                     >
                       Eliminar
                     </button>
+
+                    {isBlocked && (
+                      <p className="text-[10px] leading-snug text-zinc-500">
+                        {blockReason}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -333,7 +391,6 @@ export default function ImageGrid({ images: initialImages, usedIds }: Props) {
             ) : (
               <p className="text-sm text-zinc-400">
                 Esta acción no se puede deshacer. Se borrará también del Storage.
-                {deleteTarget.en_galeria && ' Se quitará automáticamente de la galería.'}
               </p>
             )}
 
