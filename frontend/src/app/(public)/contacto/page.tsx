@@ -30,7 +30,7 @@ export default async function ContactoPage() {
     <main>
 
       <Hero
-        imageUrl={getImage(heroBlock) ?? '/img/heroimg.png'}
+        imageUrl={getImage(heroBlock) ?? '/img/heroimg.webp'}
         eyebrow={
           heroBlock?.data?.eyebrow ??
           'Contacto'

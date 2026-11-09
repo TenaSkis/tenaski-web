@@ -66,7 +66,7 @@ export default async function GaleriaPage() {
   return (
     <main>
       <Hero
-        imageUrl={getImage(heroBlock) ?? '/img/heroimg.png'}
+        imageUrl={getImage(heroBlock) ?? '/img/heroimg.webp'}
         eyebrow={heroBlock?.data?.eyebrow ?? 'Galería'}
         title={heroBlock?.data?.titulo ?? 'La montaña, tal y como la vivimos.'}
         description={

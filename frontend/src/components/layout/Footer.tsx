@@ -19,7 +19,7 @@ export default function Footer() {
         <div className="md:col-span-1">
           <Link href="/" className="flex w-fit items-center gap-3">
             <Image
-              src="/img/logoo.png"
+              src="/img/logoo.webp"
               alt="Tena Skis"
               width={500}
               height={500}
@@ -133,7 +133,7 @@ export default function Footer() {
                 "
               >
                 <Image
-                  src="/img/danigostudios-logo.png"
+                  src="/img/danigostudios-logo.webp"
                   alt="Danigo Studios"
                   width={455}
                   height={549}

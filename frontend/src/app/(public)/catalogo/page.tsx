@@ -116,14 +116,14 @@ export default async function Catalogo() {
       name: p.nombre,
       description: p.descripcion_corta ?? '',
       slug: p.slug,
-      imageUrl: principalEntry?.image?.ruta_storage ?? '/img/manifestoimg.png',
+      imageUrl: principalEntry?.image?.ruta_storage ?? '/img/manifestoimg.webp',
     }
   })
 
   return (
     <main>
       <Hero
-        imageUrl={getImage(heroBlock) ?? '/img/heroimg.png'}
+        imageUrl={getImage(heroBlock) ?? '/img/heroimg.webp'}
         eyebrow={
           heroData.eyebrow ??
           'Colección'

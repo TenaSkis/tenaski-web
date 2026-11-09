@@ -43,7 +43,7 @@ export const TEXT_BASE_FONT_SIZE = 24
 export const SKI_BASE_COLOR = '#e8ded0'
 
 // Logo de marca que se muestra sobre la espátula al elegir un acabado
-export const BRAND_LOGO_URL = '/img/logoo.png'
+export const BRAND_LOGO_URL = '/img/logoo.webp'
 export const BRAND_LOGO_X = 110   // centro horizontal (ajústalo)
 export const BRAND_LOGO_Y = 110   // posición vertical, encima del nose
 export const BRAND_LOGO_SIZE = 60 // tamaño en px dentro del canvas

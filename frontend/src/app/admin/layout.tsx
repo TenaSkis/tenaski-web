@@ -46,7 +46,7 @@ export default async function AdminLayout({
             </Link>
             <Link href="/" target="_blank" rel="noreferrer" className="mt-2 flex items-center gap-2 rounded-2xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-100 hover:bg-zinc-900 hover:text-white transition">
               <Image
-                src="/img/logoo.png"
+                src="/img/logoo.webp"
                 alt="Tenaski"
                 width={500}
                 height={500}
@@ -67,7 +67,7 @@ export default async function AdminLayout({
             <div className="p-8 border-b border-zinc-800">
               <div className="flex items-center gap-3">
                 <Image
-                  src="/img/logoo.png"
+                  src="/img/logoo.webp"
                   alt="Tenaski"
                   width={500}
                   height={500}
@@ -99,7 +99,7 @@ export default async function AdminLayout({
               </Link>
               <Link href="/" target="_blank" rel="noreferrer" className="mt-2 flex items-center gap-2 rounded-2xl bg-white/5 px-4 py-3 text-sm font-medium text-zinc-100 hover:bg-zinc-900 hover:text-white transition">
                 <Image
-                  src="/img/logoo.png"
+                  src="/img/logoo.webp"
                   alt="Tenaski"
                   width={500}
                   height={500}

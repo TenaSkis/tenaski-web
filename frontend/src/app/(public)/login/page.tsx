@@ -11,7 +11,7 @@ export default function LoginPage() {
       <section className='relative hidden lg:flex overflow-hidden'>
 
         <Image
-            src='/img/heroimg.png'
+            src='/img/heroimg.webp'
             alt='Montañas Tenaski'
             fill
             sizes="(max-width: 1024px) 100vw, 60vw"
