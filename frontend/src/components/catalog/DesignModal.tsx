@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import NextImage from 'next/image'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase/client'
 import OrderForm from './OrderForm'
@@ -156,6 +157,11 @@ export default function DesignModal({
   const designCanvasRef = useRef<HTMLCanvasElement>(null)
   const guideCanvasRef = useRef<HTMLCanvasElement>(null)
 
+  // Caché de imágenes de acabado ya cargadas para el canvas. Evita repetir
+  // la descarga al volver a un acabado y permite reutilizar el mismo
+  // HTMLImageElement entre renders.
+  const finishCache = useRef<Map<string, HTMLImageElement>>(new Map())
+
   const [activeZone, setActiveZone] = useState<ZoneKey>('nose')
 
   // Acabado normal (gratis) y acabado premium (con coste extra) son
@@ -212,10 +218,28 @@ export default function DesignModal({
 
   useEffect(() => {
     if (!activeFinishImageUrl) return
+
+    const cached = finishCache.current.get(activeFinishImageUrl)
+    if (cached) {
+      setFinishImgEl(cached)
+      return
+    }
+
+    // `cancelled` evita que una carga antigua pise a la nueva si el usuario
+    // cambia de acabado antes de que termine de descargarse la anterior.
+    let cancelled = false
     const img = new Image()
     img.crossOrigin = 'anonymous'
-    img.onload = () => setFinishImgEl(img)
+    img.onload = () => {
+      if (cancelled) return
+      finishCache.current.set(activeFinishImageUrl, img)
+      setFinishImgEl(img)
+    }
     img.src = activeFinishImageUrl
+
+    return () => {
+      cancelled = true
+    }
   }, [activeFinishImageUrl])
 
   // Carga el logo de marca una sola vez al montar el componente
@@ -745,13 +769,19 @@ export default function DesignModal({
                               : 'border-[var(--border)]'
                           }`}
                           style={{
-                            backgroundImage: acabado.imageUrl ? `url(${acabado.imageUrl})` : undefined,
                             backgroundColor: acabado.imageUrl ? undefined : SKI_BASE_COLOR,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
                           }}
                         >
-                          <span className="absolute inset-x-0 bottom-0 bg-black/60 px-1 py-1 text-center text-[10px] font-medium text-white">
+                          {acabado.imageUrl && (
+                            <NextImage
+                              src={acabado.imageUrl}
+                              alt=""
+                              fill
+                              sizes="(min-width: 640px) 110px, 22vw"
+                              className="object-cover object-center"
+                            />
+                          )}
+                          <span className="absolute inset-x-0 bottom-0 z-10 bg-black/60 px-1 py-1 text-center text-[10px] font-medium text-white">
                             {acabado.nombre}
                           </span>
                         </button>
@@ -788,13 +818,19 @@ export default function DesignModal({
                               : 'border-[var(--border)]'
                           }`}
                           style={{
-                            backgroundImage: acabado.imageUrl ? `url(${acabado.imageUrl})` : undefined,
                             backgroundColor: acabado.imageUrl ? undefined : SKI_BASE_COLOR,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
                           }}
                         >
-                          <div className="absolute inset-x-0 bottom-0 bg-black/60 px-1 py-1 text-center text-white">
+                          {acabado.imageUrl && (
+                            <NextImage
+                              src={acabado.imageUrl}
+                              alt=""
+                              fill
+                              sizes="(min-width: 640px) 110px, 22vw"
+                              className="object-cover object-center"
+                            />
+                          )}
+                          <div className="absolute inset-x-0 bottom-0 z-10 bg-black/60 px-1 py-1 text-center text-white">
                             <div className="text-[10px] font-medium leading-tight">
                               {acabado.nombre}
                             </div>

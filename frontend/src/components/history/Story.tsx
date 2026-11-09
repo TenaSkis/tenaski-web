@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import SectionTitle from '@/components/ui/SectionTitle'
 import SectionText from '../ui/SectionTest'
 
@@ -40,9 +41,13 @@ export default function Story({
         <div className="relative h-[520px] overflow-hidden group">
 
           {imageUrl ? (
-            <div
-              className="img-premium h-full w-full bg-cover bg-center"
-              style={{ backgroundImage: `url(${imageUrl})` }}
+            <Image
+              src={imageUrl}
+              alt=""
+              fill
+              sizes="(min-width: 1152px) 512px, (min-width: 1024px) calc(50vw - 64px), calc(100vw - 48px)"
+              loading="lazy"
+              className="img-premium object-cover object-center"
             />
           ) : (
             <div className="home-section__image-placeholder flex h-full items-center justify-center">

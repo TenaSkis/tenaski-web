@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import SectionTitle from '@/components/ui/SectionTitle'
 import SectionText from '../ui/SectionTest'
 
@@ -76,20 +77,13 @@ export default function Workshop({
 
           {imageUrl ? (
 
-            <div
-              className="
-                img-premium
-                h-full
-                w-full
-                bg-cover
-                bg-center
-                transition-all
-                duration-700
-                group-hover:scale-105
-              "
-              style={{
-                backgroundImage: `url(${imageUrl})`,
-              }}
+            <Image
+              src={imageUrl}
+              alt=""
+              fill
+              sizes="(min-width: 1152px) 512px, (min-width: 1024px) calc(50vw - 64px), calc(100vw - 48px)"
+              loading="lazy"
+              className="img-premium object-cover object-center transition-all duration-700 group-hover:scale-105"
             />
 
           ) : (

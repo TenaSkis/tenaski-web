@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import SectionText from "../ui/SectionTest"
 
 // Tipo para cada paso individual del proceso
@@ -60,9 +61,13 @@ export default function Process({ eyebrow, title, description, steps }: ProcessP
 
                   {/* Imagen o placeholder si no hay */}
                   {step.imageUrl ? (
-                    <div
-                      className="img-premium h-full w-full bg-cover bg-center transition-all duration-700 group-hover:scale-110 group-hover:brightness-110 group-hover:contrast-110"
-                      style={{ backgroundImage: `url(${step.imageUrl})` }}
+                    <Image
+                      src={step.imageUrl}
+                      alt={step.imageAlt ?? step.title}
+                      fill
+                      sizes="(min-width: 1152px) 528px, (min-width: 1024px) calc(50vw - 48px), calc(100vw - 48px)"
+                      loading="lazy"
+                      className="img-premium object-cover object-center transition-all duration-700 group-hover:scale-110 group-hover:brightness-110 group-hover:contrast-110"
                     />
                   ) : (
                     <div className="home-section__image-placeholder flex h-full items-center justify-center">
