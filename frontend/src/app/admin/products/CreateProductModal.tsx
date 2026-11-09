@@ -4,6 +4,18 @@ import { useState, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import { createProductWithImages } from './actions'
 import { supabase } from '@/lib/supabase/client'
+import Notice from '@/components/ui/Notice'
+import { ACCEPT_ATTRIBUTE, QUALITY_PRODUCT } from '@/lib/images/config'
+import { cleanupAdminImages } from '@/lib/images/cleanupAdminImages'
+import {
+  getImageErrorMessage,
+  getUnsupportedFormatMessage,
+  ImageProcessingError,
+} from '@/lib/images/errors'
+import {
+  uploadAdminImages,
+  validateAdminImageBatch,
+} from '@/lib/images/uploadAdminImages'
 
 type Props = {
   open: boolean
@@ -63,6 +75,8 @@ export default function CreateProductModal({ open, onClose }: Props) {
   const [isDragging, setIsDragging] = useState(false)
 
   const [loading, setLoading] = useState(false)
+  const [progress, setProgress] = useState<string | null>(null)
+  const [formatNotice, setFormatNotice] = useState<string | null>(null)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
@@ -85,6 +99,8 @@ export default function CreateProductModal({ open, onClose }: Props) {
     setMedidas(['', '', ''])
     setPrecioExtraEspatula('')
     setPrecioExtraCola('')
+    setFormatNotice(null)
+    pendingFiles.forEach((item) => URL.revokeObjectURL(item.preview))
     setPendingFiles([])
     setSelectedExisting(new Set())
     onClose()
@@ -115,14 +131,32 @@ export default function CreateProductModal({ open, onClose }: Props) {
     }
   }
 
-  const addFiles = (fileList: FileList | File[]) => {
-    const newPending: PendingFile[] = Array.from(fileList).map((file) => ({
+  const addFiles = useCallback((fileList: FileList | File[]) => {
+    const files = Array.from(fileList)
+    if (files.length === 0) return
+
+    setFormatNotice(null)
+
+    try {
+      // Se valida el lote completo antes de añadirlo a la cola.
+      validateAdminImageBatch([...pendingFiles.map((item) => item.file), ...files])
+    } catch (err) {
+      const formatMessage = getUnsupportedFormatMessage(err)
+      if (formatMessage) {
+        setFormatNotice(formatMessage)
+        return
+      }
+      alert(getImageErrorMessage(err))
+      return
+    }
+
+    const newPending: PendingFile[] = files.map((file) => ({
       localId: makeLocalId(),
       file,
       preview: URL.createObjectURL(file),
     }))
     setPendingFiles((prev) => [...prev, ...newPending])
-  }
+  }, [pendingFiles])
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -151,11 +185,9 @@ export default function CreateProductModal({ open, onClose }: Props) {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
-    const dropped = Array.from(e.dataTransfer.files).filter((f) =>
-      f.type.startsWith('image/')
-    )
+    const dropped = Array.from(e.dataTransfer.files)
     if (dropped.length > 0) addFiles(dropped)
-  }, [])
+  }, [addFiles])
 
   const toggleExisting = (id: string) => {
     setSelectedExisting((prev) => {
@@ -175,39 +207,35 @@ export default function CreateProductModal({ open, onClose }: Props) {
 
   const handleSubmit = async () => {
     setLoading(true)
+    setProgress(null)
+
+    let uploadedImageIds: string[] = []
 
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('No autorizado')
-
-      const uploadedImageIds: string[] = []
-
-      for (const pending of pendingFiles) {
-        const fileName = `${Date.now()}-${pending.file.name}`
-
-        const { error: storageError } = await supabase.storage
-          .from('product-images')
-          .upload(fileName, pending.file)
-
-        if (storageError) throw storageError
-
-        const { data: urlData } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(fileName)
-
-        const { data: imgRow, error: imgError } = await supabase
-          .from('image')
-          .insert({
-            nombre_archivo: pending.file.name,
-            ruta_storage: urlData.publicUrl,
-            uploaded_by: user!.id,
-          })
-          .select('id')
-          .single()
-
-        if (imgError) throw imgError
-        uploadedImageIds.push(imgRow.id)
+      if (!user) {
+        throw new ImageProcessingError(
+          'NOT_AUTHENTICATED',
+          'No autorizado. Vuelve a iniciar sesión.'
+        )
       }
+
+      // Conversión y subida del lote completo antes de crear el producto.
+      const uploaded = await uploadAdminImages({
+        files: pendingFiles.map((pending) => pending.file),
+        userId: user.id,
+        quality: QUALITY_PRODUCT,
+        client: supabase,
+        onProgress: (item) => {
+          setProgress(
+            item.phase === 'converting'
+              ? `Convirtiendo ${item.current}/${item.total}…`
+              : `Subiendo ${item.current}/${item.total}…`
+          )
+        },
+      })
+
+      uploadedImageIds = uploaded.map((image) => image.id)
 
       const allImageIds = [
         ...uploadedImageIds,
@@ -237,9 +265,20 @@ export default function CreateProductModal({ open, onClose }: Props) {
       handleClose()
     } catch (err) {
       console.error(err)
-      alert('Error al guardar el producto. Revisa la consola.')
+
+      // Si el producto no llegó a crearse, se limpian solo las imágenes
+      // subidas en esta operación que no estén referenciadas.
+      if (uploadedImageIds.length > 0) {
+        const cleanup = await cleanupAdminImages(uploadedImageIds, supabase)
+        if (cleanup.failed.length > 0) {
+          console.error('Limpieza incompleta de imágenes:', cleanup)
+        }
+      }
+
+      alert(getImageErrorMessage(err))
     } finally {
       setLoading(false)
+      setProgress(null)
     }
   }
 
@@ -471,7 +510,7 @@ export default function CreateProductModal({ open, onClose }: Props) {
                   ref={fileInputRef}
                   type="file"
                   multiple
-                  accept="image/*"
+                  accept={ACCEPT_ATTRIBUTE}
                   onChange={handleFileInputChange}
                   className="hidden"
                   aria-label="Seleccionar imágenes"
@@ -496,8 +535,19 @@ export default function CreateProductModal({ open, onClose }: Props) {
                     Arrastra imágenes aquí o{' '}
                     <span className="underline">haz clic para seleccionar</span>
                   </p>
-                  <p className="text-xs mt-1 opacity-60">PNG, JPG, WEBP…</p>
+                  <p className="text-xs mt-1 opacity-60">
+                    JPG, PNG y WebP (se convierten a WebP)
+                  </p>
                 </div>
+
+                {formatNotice && (
+                  <Notice
+                    title="Formato no admitido"
+                    message={formatNotice}
+                    onClose={() => setFormatNotice(null)}
+                    className="mt-3"
+                  />
+                )}
 
                 {pendingFiles.length > 0 && (
                   <div className="mt-4 grid grid-cols-3 gap-3">
@@ -593,7 +643,10 @@ export default function CreateProductModal({ open, onClose }: Props) {
           ) : (
             <button
               type="button"
-              onClick={() => setStep(1)}
+              onClick={() => {
+                setFormatNotice(null)
+                setStep(1)
+              }}
               className="px-5 py-2 text-sm text-zinc-400 hover:text-white transition"
             >
               ← Volver
@@ -615,7 +668,7 @@ export default function CreateProductModal({ open, onClose }: Props) {
               disabled={loading}
               className="bg-white text-black px-6 py-2 rounded-lg font-medium hover:bg-zinc-200 transition disabled:opacity-50"
             >
-              {loading ? 'Guardando…' : 'Guardar producto'}
+              {loading ? (progress ?? 'Guardando…') : 'Guardar producto'}
             </button>
           )}
         </div>

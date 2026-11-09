@@ -6,6 +6,18 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import CreateProductModal from './CreateProductModal'
 import { deleteProduct, updateProduct, updateProductImages, setFeaturedProduct } from './actions'
+import { ACCEPT_ATTRIBUTE, QUALITY_PRODUCT } from '@/lib/images/config'
+import Notice from '@/components/ui/Notice'
+import { cleanupAdminImages } from '@/lib/images/cleanupAdminImages'
+import {
+  getImageErrorMessage,
+  getUnsupportedFormatMessage,
+  ImageProcessingError,
+} from '@/lib/images/errors'
+import {
+  uploadAdminImages,
+  validateAdminImageBatch,
+} from '@/lib/images/uploadAdminImages'
 
 // ─── Tipos ────────────────────────────────────────────────
 type Product = {
@@ -70,6 +82,7 @@ export default function ProductTable({ products }: ProductTableProps) {
   // ── Editar producto — datos ─────────────────────────────
   const [editProduct, setEditProduct] = useState<Product | null>(null)
   const [editLoading, setEditLoading] = useState(false)
+  const [editProgress, setEditProgress] = useState<string | null>(null)
   const editFormRef = useRef<HTMLFormElement>(null)
 
   // ── Editar producto — medidas y precio extra ────────────
@@ -86,6 +99,7 @@ export default function ProductTable({ products }: ProductTableProps) {
   // ── Editar producto — nuevas imágenes ──────────────────
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([])
   const [isDragging, setIsDragging] = useState(false)
+  const [formatNotice, setFormatNotice] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // ── Editar producto — biblioteca ───────────────────────
@@ -121,6 +135,7 @@ export default function ProductTable({ products }: ProductTableProps) {
   // ──────────────────────────────────────────────────────────
   const openEdit = async (product: Product) => {
     setEditProduct(product)
+    setFormatNotice(null)
     setRemovedImageIds(new Set())
     setPendingFiles([])
     setSelectedLibrary(new Set())
@@ -185,6 +200,7 @@ export default function ProductTable({ products }: ProductTableProps) {
 
   const closeEdit = () => {
     setEditProduct(null)
+    setFormatNotice(null)
     pendingFiles.forEach((f) => URL.revokeObjectURL(f.preview))
     setPendingFiles([])
     setEditMedidas([])
@@ -227,14 +243,32 @@ export default function ProductTable({ products }: ProductTableProps) {
   // ──────────────────────────────────────────────────────────
   // Archivos nuevos (drag & drop + input)
   // ──────────────────────────────────────────────────────────
-  const addFiles = (fileList: FileList | File[]) => {
-    const news: PendingFile[] = Array.from(fileList).map((file) => ({
+  const addFiles = useCallback((fileList: FileList | File[]) => {
+    const files = Array.from(fileList)
+    if (files.length === 0) return
+
+    setFormatNotice(null)
+
+    try {
+      // Se valida el lote completo antes de añadirlo a la cola.
+      validateAdminImageBatch([...pendingFiles.map((item) => item.file), ...files])
+    } catch (err) {
+      const formatMessage = getUnsupportedFormatMessage(err)
+      if (formatMessage) {
+        setFormatNotice(formatMessage)
+        return
+      }
+      alert(getImageErrorMessage(err))
+      return
+    }
+
+    const news: PendingFile[] = files.map((file) => ({
       localId: makeLocalId(),
       file,
       preview: URL.createObjectURL(file),
     }))
     setPendingFiles((prev) => [...prev, ...news])
-  }
+  }, [pendingFiles])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length) {
@@ -261,11 +295,9 @@ export default function ProductTable({ products }: ProductTableProps) {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
-    const dropped = Array.from(e.dataTransfer.files).filter((f) =>
-      f.type.startsWith('image/')
-    )
+    const dropped = Array.from(e.dataTransfer.files)
     if (dropped.length) addFiles(dropped)
-  }, [])
+  }, [addFiles])
 
   // ──────────────────────────────────────────────────────────
   // Biblioteca: toggle selección
@@ -289,39 +321,38 @@ export default function ProductTable({ products }: ProductTableProps) {
     if (!editFormRef.current) return
 
     setEditLoading(true)
+    setEditProgress(null)
+
+    let uploadedImageIds: string[] = []
+
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('No autorizado')
-
-      // 1. Subir archivos nuevos a Storage + insertar en tabla image
-      const newImageIds: string[] = []
-      for (const pending of pendingFiles) {
-        const fileName = `${Date.now()}-${pending.file.name}`
-
-        const { error: storageError } = await supabase.storage
-          .from('product-images')
-          .upload(fileName, pending.file)
-        if (storageError) throw storageError
-
-        const { data: urlData } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(fileName)
-
-        const { data: imgRow, error: imgError } = await supabase
-          .from('image')
-          .insert({
-            nombre_archivo: pending.file.name,
-            ruta_storage: urlData.publicUrl,
-            uploaded_by: user.id,
-          })
-          .select('id')
-          .single()
-        if (imgError) throw imgError
-        newImageIds.push(imgRow.id)
+      if (!user) {
+        throw new ImageProcessingError(
+          'NOT_AUTHENTICATED',
+          'No autorizado. Vuelve a iniciar sesión.'
+        )
       }
 
+      // 1. Convertir y subir el lote completo antes de actualizar el producto.
+      const uploaded = await uploadAdminImages({
+        files: pendingFiles.map((pending) => pending.file),
+        userId: user.id,
+        quality: QUALITY_PRODUCT,
+        client: supabase,
+        onProgress: (item) => {
+          setEditProgress(
+            item.phase === 'converting'
+              ? `Convirtiendo ${item.current}/${item.total}…`
+              : `Subiendo ${item.current}/${item.total}…`
+          )
+        },
+      })
+
+      uploadedImageIds = uploaded.map((image) => image.id)
+
       // 2. IDs a añadir = nuevos subidos + seleccionados de biblioteca
-      const imageIdsToAdd = [...newImageIds, ...Array.from(selectedLibrary)]
+      const imageIdsToAdd = [...uploadedImageIds, ...Array.from(selectedLibrary)]
 
       // 3. Actualizar datos del producto
       const formData = new FormData(editFormRef.current)
@@ -348,9 +379,20 @@ export default function ProductTable({ products }: ProductTableProps) {
       router.refresh()
     } catch (err) {
       console.error('Error actualizando producto:', err)
-      alert('Error al guardar. Revisa la consola.')
+
+      // Si la actualización no se completó, se limpian solo las imágenes
+      // subidas en esta operación que no estén referenciadas.
+      if (uploadedImageIds.length > 0) {
+        const cleanup = await cleanupAdminImages(uploadedImageIds, supabase)
+        if (cleanup.failed.length > 0) {
+          console.error('Limpieza incompleta de imágenes:', cleanup)
+        }
+      }
+
+      alert(getImageErrorMessage(err))
     } finally {
       setEditLoading(false)
+      setEditProgress(null)
     }
   }
 
@@ -742,7 +784,7 @@ export default function ProductTable({ products }: ProductTableProps) {
                   ref={fileInputRef}
                   type="file"
                   multiple
-                  accept="image/*"
+                  accept={ACCEPT_ATTRIBUTE}
                   onChange={handleFileChange}
                   className="hidden"
                 />
@@ -760,8 +802,19 @@ export default function ProductTable({ products }: ProductTableProps) {
                   <p className="text-sm font-medium">
                     Arrastra imágenes aquí o <span className="underline">haz clic para seleccionar</span>
                   </p>
-                  <p className="text-xs mt-1 opacity-60">PNG, JPG, WEBP…</p>
+                  <p className="text-xs mt-1 opacity-60">
+                    JPG, PNG y WebP (se convierten a WebP)
+                  </p>
                 </div>
+
+                {formatNotice && (
+                  <Notice
+                    title="Formato no admitido"
+                    message={formatNotice}
+                    onClose={() => setFormatNotice(null)}
+                    className="mt-3"
+                  />
+                )}
 
                 {pendingFiles.length > 0 && (
                   <div className="mt-3 grid grid-cols-4 gap-2">
@@ -853,7 +906,7 @@ export default function ProductTable({ products }: ProductTableProps) {
                 disabled={editLoading}
                 className="bg-white text-black px-6 py-2 rounded-lg font-medium hover:bg-zinc-200 transition disabled:opacity-50"
               >
-                {editLoading ? 'Guardando…' : 'Guardar cambios'}
+                {editLoading ? (editProgress ?? 'Guardando…') : 'Guardar cambios'}
               </button>
             </div>
           </div>
