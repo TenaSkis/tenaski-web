@@ -91,6 +91,15 @@ const DEFAULT_TEXT_COLOR = '#1b130c'
 const DISPLAY_HEIGHT_NORMAL = 420
 const DISPLAY_HEIGHT_ZOOMED = 680
 
+// Ancho de la variante optimizada que se usa como textura del canvas.
+// El canvas es de 220x900 y los acabados son retrato, así que 640 px
+// cubren de sobra la zona visible sin descargar el original completo.
+const FINISH_CANVAS_WIDTH = 640
+
+function optimizedFinishSrc(url: string) {
+  return `/_next/image?url=${encodeURIComponent(url)}&w=${FINISH_CANVAS_WIDTH}&q=75`
+}
+
 function drawImageCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, zone: Zone) {
   const scale = Math.max(zone.width / img.width, zone.height / img.height)
   const w = img.width * scale
@@ -228,6 +237,7 @@ export default function DesignModal({
     // `cancelled` evita que una carga antigua pise a la nueva si el usuario
     // cambia de acabado antes de que termine de descargarse la anterior.
     let cancelled = false
+    let usingFallback = false
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = () => {
@@ -235,7 +245,15 @@ export default function DesignModal({
       finishCache.current.set(activeFinishImageUrl, img)
       setFinishImgEl(img)
     }
-    img.src = activeFinishImageUrl
+    img.onerror = () => {
+      // Si falla la variante optimizada, se intenta una sola vez el original.
+      // `usingFallback` y onerror=null evitan un bucle si también falla.
+      if (cancelled || usingFallback) return
+      usingFallback = true
+      img.onerror = null
+      img.src = activeFinishImageUrl
+    }
+    img.src = optimizedFinishSrc(activeFinishImageUrl)
 
     return () => {
       cancelled = true
