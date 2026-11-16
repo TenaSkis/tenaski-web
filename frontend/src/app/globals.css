@@ -69,7 +69,7 @@
      TEXTURA DE FONDO (opcional, vacía por defecto para otros temas)
   ========================================================== */
 
-  --background-texture: url('/img/wood-texture.png');
+  --background-texture: url('/img/wood-texture.webp');
   --background-texture-opacity: 0.4;
 
 }

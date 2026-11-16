@@ -113,7 +113,7 @@ export default async function Historia() {
     <>
       {/* HERO */}
       <Hero
-        imageUrl={getImage(heroBlock) ?? '/img/heroimg.png'}
+        imageUrl={getImage(heroBlock) ?? '/img/heroimg.webp'}
         eyebrow={
           heroBlock?.data?.eyebrow ??
           'Pirineos · Desde 2026'
@@ -143,7 +143,7 @@ export default async function Historia() {
           storyBlock?.data?.descripcion ??
           'Tena Skis nace del deseo de recuperar una forma más humana de fabricar esquís, donde cada pieza tenga personalidad propia y una conexión directa con la montaña.'
         }
-        imageUrl={getImage(storyBlock) ?? '/img/storyimg.jpeg'}
+        imageUrl={getImage(storyBlock) ?? '/img/storyimg.webp'}
       />
 
       {/* VALUES */}
@@ -165,7 +165,7 @@ export default async function Historia() {
             workshopBlock?.data?.descripcion ??
             'No trabajamos en una fábrica. Trabajamos en un espacio donde cada herramienta, cada material y cada decisión forman parte del resultado final.'
           }
-          imageUrl={getImage(workshopBlock) ?? '/img/workshoppimg.png'}
+          imageUrl={getImage(workshopBlock) ?? '/img/workshoppimg.webp'}
           details={
             workshopBlock?.data?.detalles ?? [
               'Maderas seleccionadas',

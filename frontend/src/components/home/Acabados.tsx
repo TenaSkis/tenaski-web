@@ -36,6 +36,7 @@ export default function Acabados({ eyebrow, description, acabados }: Props) {
                     alt={acabado.nombre}
                     width={1200}
                     height={1200}
+                    sizes="(min-width: 1152px) 208px, (min-width: 1024px) 18vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, 50vw"
                     className="h-auto w-full transition-transform duration-700 group-hover:scale-108"
                   />
                 ) : (

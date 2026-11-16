@@ -6,12 +6,6 @@ import { updateContentBlock } from './actions'
 import UploadContentImage from './UploadContentImage'
 import Switch from './Switch'
 
-type ImageRow = {
-  id: string
-  ruta_storage: string
-  nombre_archivo: string
-}
-
 type WorkshopBlock = {
   id: string
   seccion: string
@@ -28,7 +22,6 @@ type WorkshopBlock = {
 
 type Props = {
   block: WorkshopBlock
-  imageLibrary: ImageRow[]
 }
 
 type ImageRelation =
@@ -200,6 +193,7 @@ export default function WorkshopContentForm({ block }: Props) {
                 src={previewImage}
                 alt="Workshop image"
                 fill
+                sizes="(min-width: 1280px) 590px, (min-width: 768px) 45vw, calc(100vw - 80px)"
                 className="object-cover"
               />
             ) : (

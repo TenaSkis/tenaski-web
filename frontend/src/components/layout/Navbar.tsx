@@ -40,7 +40,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3">
             <Image
-              src="/img/logoo.png"
+              src="/img/logoo.webp"
               alt="Tena Skis"
               width={32}
               height={32}

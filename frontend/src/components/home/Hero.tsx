@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useHeroAutoFit } from '@/hooks/useHeroAutoFit'
 
@@ -61,16 +62,24 @@ export default function Hero({
         {/* 1. Imagen principal del Hero + Su propia transición inferior + Opacidad */}
         {imageUrl ? (
           <div
-            className="h-full w-full bg-cover bg-center"
+            className="relative h-full w-full"
             style={{ 
-              backgroundImage: `url(${imageUrl})`,
               opacity: 0.55, // <-- Aquí le damos el toque justo de opacidad para que trasluzca la madera
 
               // Creamos un fundido suave: arriba 100% visible, abajo se desvanece por completo
               maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
               WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)'
             }}
-          />
+          >
+            <Image
+              src={imageUrl}
+              alt=""
+              fill
+              sizes="100vw"
+              preload={!preview}
+              className="object-cover"
+            />
+          </div>
         ) : (
           <div className="h-full w-full bg-[var(--surface-soft)]" />
         )}

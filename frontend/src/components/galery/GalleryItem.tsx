@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+
 type GalleryItemProps = {
   src: string
   alt: string
@@ -21,14 +23,13 @@ export default function GalleryItem({
     >
 
       {/* Imagen */}
-      <div
-        className="
-          h-full w-full bg-cover bg-center
-          transition-all duration-700
-          group-hover:scale-105
-          group-hover:brightness-110
-        "
-        style={{ backgroundImage: `url(${src})` }}
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes="(min-width: 1280px) 360px, (min-width: 768px) 33vw, 50vw"
+        loading="lazy"
+        className="object-cover transition-all duration-700 group-hover:scale-105 group-hover:brightness-110"
       />
 
       {/* Overlay premium */}

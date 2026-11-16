@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import SectionText from '../ui/SectionTest'
 
@@ -24,9 +25,12 @@ export default function ProductCard({
       <div className="relative h-[500px] overflow-hidden">
 
         {imageUrl ? (
-          <div
-            className="img-premium h-full w-full bg-cover bg-center transition-all duration-700 group-hover:scale-105"
-            style={{ backgroundImage: `url(${imageUrl})` }}
+          <Image
+            src={imageUrl}
+            alt={name}
+            fill
+            sizes="(min-width: 1152px) 512px, (min-width: 768px) calc(50vw - 64px), calc(100vw - 48px)"
+            className="img-premium object-cover object-center transition-all duration-700 group-hover:scale-105"
           />
         ) : (
           <div className="flex h-full items-center justify-center bg-[var(--surface-soft)]">

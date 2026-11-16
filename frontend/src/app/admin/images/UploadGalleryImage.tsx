@@ -2,6 +2,14 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
+import Notice from '@/components/ui/Notice'
+import { ACCEPT_ATTRIBUTE, QUALITY_PRODUCT } from '@/lib/images/config'
+import {
+  getImageErrorMessage,
+  getUnsupportedFormatMessage,
+  ImageProcessingError,
+} from '@/lib/images/errors'
+import { uploadAdminImages } from '@/lib/images/uploadAdminImages'
 
 type UploadedImage = {
   id: string
@@ -15,64 +23,88 @@ export default function UploadGalleryImage({
   onUploaded: (image: UploadedImage) => void
 }) {
   const [loading, setLoading] = useState(false)
+  const [status, setStatus] = useState<string | null>(null)
+  const [formatNotice, setFormatNotice] = useState<string | null>(null)
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
 
+    setFormatNotice(null)
     setLoading(true)
+    setStatus('Preparando…')
 
     try {
       const { data: userData, error: userError } = await supabase.auth.getUser()
       if (userError || !userData?.user) {
-        throw new Error('No hay sesión activa. Vuelve a iniciar sesión.')
+        throw new ImageProcessingError(
+          'NOT_AUTHENTICATED',
+          'No hay sesión activa. Vuelve a iniciar sesión.'
+        )
       }
 
-      const fileName = `${Date.now()}-${file.name}`
+      const [uploaded] = await uploadAdminImages({
+        files: [file],
+        userId: userData.user.id,
+        quality: QUALITY_PRODUCT,
+        client: supabase,
+        onProgress: (progress) => {
+          setStatus(
+            progress.phase === 'converting'
+              ? 'Convirtiendo a WebP…'
+              : 'Subiendo…'
+          )
+        },
+      })
 
-      const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(fileName, file)
+      if (!uploaded) {
+        throw new ImageProcessingError(
+          'UPLOAD_FAILED',
+          'No se pudo completar la subida de la imagen.'
+        )
+      }
 
-      if (uploadError) throw uploadError
-
-      const { data } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(fileName)
-
-      const { data: image, error: imageError } = await supabase
-        .from('image')
-        .insert({
-          nombre_archivo: file.name,
-          ruta_storage: data.publicUrl,
-          uploaded_by: userData.user.id,
-        })
-        .select('id, ruta_storage, nombre_archivo')
-        .single()
-
-      if (imageError) throw imageError
-
-      onUploaded(image)
+      onUploaded({
+        id: uploaded.id,
+        ruta_storage: uploaded.ruta_storage,
+        nombre_archivo: uploaded.nombre_archivo,
+      })
     } catch (err: unknown) {
-      const error = err as { message?: string }
       console.error(err)
-      alert(error?.message || 'Error subiendo imagen')
+      const formatMessage = getUnsupportedFormatMessage(err)
+      if (formatMessage) {
+        setFormatNotice(formatMessage)
+        return
+      }
+      alert(getImageErrorMessage(err))
     } finally {
       setLoading(false)
+      setStatus(null)
       e.target.value = ''
     }
   }
 
   return (
-    <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#C4A882] px-5 py-2.5 text-sm font-semibold text-[#0F0F0F] hover:opacity-90 transition">
-      <span>{loading ? 'Subiendo...' : '+ Subir imagen'}</span>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleFileChange}
-        disabled={loading}
-        className="hidden"
-      />
-    </label>
+    <>
+      <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#C4A882] px-5 py-2.5 text-sm font-semibold text-[#0F0F0F] hover:opacity-90 transition">
+        <span>{loading ? (status ?? 'Procesando…') : '+ Subir imagen'}</span>
+        <input
+          type="file"
+          accept={ACCEPT_ATTRIBUTE}
+          onChange={handleFileChange}
+          disabled={loading}
+          className="hidden"
+        />
+      </label>
+
+      {formatNotice && (
+        <Notice
+          title="Formato no admitido"
+          message={formatNotice}
+          onClose={() => setFormatNotice(null)}
+          className="mt-2"
+        />
+      )}
+    </>
   )
 }

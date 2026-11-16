@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import SectionTitle from '@/components/ui/SectionTitle'
 import SectionText from '../ui/SectionTest'
 
@@ -42,9 +43,12 @@ return (
 
       {/* Imagen o placeholder */}
       {imageUrl ? (
-        <div
-          className="img-premium h-full w-full bg-cover bg-center"
-          style={{ backgroundImage: `url(${imageUrl})` }}
+        <Image
+          src={imageUrl}
+          alt=""
+          fill
+          sizes="(min-width: 1152px) 512px, (min-width: 1024px) calc(50vw - 64px), calc(100vw - 48px)"
+          className="img-premium object-cover"
         />
       ) : (
         <div className="home-section__image-placeholder flex h-full items-center justify-center">

@@ -14,12 +14,6 @@ import Hero from '@/components/home/Hero'
 
 // ── Tipos ────────────────────────────────────────────────────────────────────
 
-type ImageRow = {
-  id: string
-  ruta_storage: string
-  nombre_archivo: string
-}
-
 // La relación `image` embebida puede venir como objeto (FK muchos-a-uno,
 // caso normal en Postgres/PostgREST) o como array (según cómo la tipe
 // Supabase). Contemplamos ambos casos con un tipo reutilizable.
@@ -39,7 +33,6 @@ type HeroBlock = {
 
 type Props = {
   block: HeroBlock
-  imageLibrary: ImageRow[]
   seccion: string
   titulo: string
 }

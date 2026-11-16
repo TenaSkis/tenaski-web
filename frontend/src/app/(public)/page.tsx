@@ -179,15 +179,15 @@ export default async function Home() {
     ? (() => {
         const imgs = featured.product_image as unknown as FeaturedImageRow[]
         const main = imgs.find((pi) => pi.imagen_principal) ?? imgs[0]
-        return main?.image?.ruta_storage ?? '/img/manifestoimg.png'
+        return main?.image?.ruta_storage ?? '/img/manifestoimg.webp'
       })()
-    : '/img/manifestoimg.png'
+    : '/img/manifestoimg.webp'
 
   return (
     <>
       {/* HERO */}
       <Hero
-        imageUrl={getImage(hero) ?? '/img/heroimg.png'}
+        imageUrl={getImage(hero) ?? '/img/heroimg.webp'}
         eyebrow={hero?.data?.eyebrow ?? ''}
         title={hero?.data?.titulo ?? ''}
         description={hero?.data?.descripcion ?? ''}
@@ -199,7 +199,7 @@ export default async function Home() {
 
       {/* MANIFESTO */}
       <Manifesto
-        imageUrl={getImage(manifesto) ?? '/img/manifestoimg.png'}
+        imageUrl={getImage(manifesto) ?? '/img/manifestoimg.webp'}
         eyebrow={manifesto?.data?.eyebrow ?? ''}
         title={manifesto?.data?.titulo ?? ''}
         description={manifesto?.data?.descripcion ?? ''}
@@ -215,25 +215,25 @@ export default async function Home() {
             {
               title: step(1)?.data?.titulo ?? '',
               description: step(1)?.data?.descripcion ?? '',
-              imageUrl: getImage(step(1)) ?? '/img/designimg.png',
+              imageUrl: getImage(step(1)) ?? '/img/designimg.webp',
               imageAlt: 'Step 1',
             },
             {
               title: step(2)?.data?.titulo ?? '',
               description: step(2)?.data?.descripcion ?? '',
-              imageUrl: getImage(step(2)) ?? '/img/woodimg.jpeg',
+              imageUrl: getImage(step(2)) ?? '/img/woodimg.webp',
               imageAlt: 'Step 2',
             },
             {
               title: step(3)?.data?.titulo ?? '',
               description: step(3)?.data?.descripcion ?? '',
-              imageUrl: getImage(step(3)) ?? '/img/buildimg.jpeg',
+              imageUrl: getImage(step(3)) ?? '/img/buildimg.webp',
               imageAlt: 'Step 3',
             },
             {
               title: step(4)?.data?.titulo ?? '',
               description: step(4)?.data?.descripcion ?? '',
-              imageUrl: getImage(step(4)) ?? '/img/finishimg.png',
+              imageUrl: getImage(step(4)) ?? '/img/finishimg.webp',
               imageAlt: 'Step 4',
             },
           ]}
